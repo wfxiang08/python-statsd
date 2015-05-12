@@ -1,4 +1,14 @@
+# -*- coding:utf-8 -*-
 import logging
+
+# statsd为什么和client之间没有形成循环引用
+# 首先: statsd在import之后，该package已经形成
+# 而 __init__.py只是做一些额外的辅助工作
+# from statsd.connection import Connection
+# from statsd.client import Client
+# 在statsd导入: Client时，Connection等已经作为一个属性写入statsd,
+# 而client对statsd的其他模块也没有什么依赖, 即便是依赖Connection也没有什么问题
+#
 import statsd
 
 from . import compat
@@ -29,10 +39,13 @@ class Client(object):
     connection = None
 
     def __init__(self, name, connection=None):
+        # name的定义 key1.key2.key3
         self.name = self._get_name(name)
+
         if not connection:
             connection = statsd.Connection()
         self.connection = connection
+
         self.logger = logging.getLogger(
             '%s.%s' % (__name__, self.__class__.__name__))
 
@@ -56,6 +69,7 @@ class Client(object):
         :type class_: :class:`~statsd.client.Client`
         '''
 
+        # 新的Name
         # If the name was given, use it. Otherwise simply clone
         name = self._get_name(self.name, name)
 

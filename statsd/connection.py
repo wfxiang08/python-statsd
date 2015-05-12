@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import logging
 import socket
 import random
@@ -38,8 +39,11 @@ class Connection(object):
         self._disabled = disabled or self.default_disabled
         self.logger = logging.getLogger(
             '%s.%s' % (__name__, self.__class__.__name__))
+
+        # 创建UDP Socket
         self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.udp_sock.connect((self._host, self._port))
+
         self.logger.debug(
             'Initialized connection to %s:%d with P(%.1f)',
             self._host, self._port, self._sample_rate)
@@ -74,6 +78,7 @@ class Connection(object):
         try:
             for stat, value in compat.iter_dict(sampled_data):
                 send_data = ('%s:%s' % (stat, value)).encode("utf-8")
+                # 通过UDP Sock来发送数据
                 self.udp_sock.send(send_data)
             return True
         except Exception as e:
